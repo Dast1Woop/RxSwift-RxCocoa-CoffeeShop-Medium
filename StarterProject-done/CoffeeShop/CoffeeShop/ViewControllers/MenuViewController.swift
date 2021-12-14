@@ -24,14 +24,14 @@ class MenuViewController: BaseViewController {
     return button!
   }()
   
-  private lazy var coffees: Observable<[Coffee]> = {
+  private lazy var coffees: BehaviorRelay<[Coffee]> = {
     let espresso = Coffee(name: "Espresso", icon: "espresso", price: 4.5)
     let cappuccino = Coffee(name: "Cappuccino", icon: "cappuccino", price: 11)
     let macciato = Coffee(name: "Macciato", icon: "macciato", price: 13)
     let mocha = Coffee(name: "Mocha", icon: "mocha", price: 8.5)
     let latte = Coffee(name: "Latte", icon: "latte", price: 7.5)
     
-    return .just([espresso, cappuccino, macciato, mocha, latte])
+    return .init(value:[espresso, cappuccino, macciato, mocha, latte])
   }()
   
   override func viewDidLoad() {
@@ -41,8 +41,7 @@ class MenuViewController: BaseViewController {
     
     configureTableView()
     
-    coffees
-        .bind(to: tableView
+    coffees.asDriver(onErrorJustReturn: []).drive(tableView
                 .rx
                 .items(cellIdentifier: "coffeeCell", cellType: CoffeeCell.self)){row,element,cell in
             cell.configure(with: element)
@@ -83,6 +82,13 @@ class MenuViewController: BaseViewController {
         self.shoppingCartButton.badgeText = item > 0 ? "\(item)" : ""
     }).disposed(by: disposebag)
   }
+    
+    override func motionBegan(_ motion: UIEventSubtype, with event: UIEvent?) {
+        let espresso = Coffee(name: "Mt-Espresso", icon: "espresso", price: 4.5)
+        let cappuccino = Coffee(name: "Mt-Cappuccino", icon: "cappuccino", price: 11)
+        
+        coffees.accept([espresso, cappuccino])
+    }
   
   private func configureTableView() {
     
